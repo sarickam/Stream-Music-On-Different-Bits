@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adaptive Bitrate Streaming</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Song Upload and Streaming</h1>
+
+    <!-- Upload Form -->
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="song" id="songFile" required />
+      <input
+        type="text"
+        name="song_name"
+        id="songName"
+        placeholder="Song Name"
+        required
+      />
+      <button type="submit">Upload Song</button>
+    </form>
+
+    <h2>Uploaded Songs</h2>
+
+    <!-- Song List -->
+    <div id="songList"></div>
+
+    <script>
+      // Function to upload song
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+          const formData = new FormData();
+          formData.append("song", document.getElementById("songFile").files[0]);
+          formData.append(
+            "song_name",
+            document.getElementById("songName").value
+          );
+
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            alert("Song uploaded successfully");
+            loadSongs(); // Reload songs list
+          } else {
+            alert("Failed to upload song");
+          }
+        });
+
+      // Function to load songs
+      async function loadSongs() {
+        const response = await fetch("/songs");
+        const songs = await response.json();
+        const songList = document.getElementById("songList");
+        songList.innerHTML = "";
+
+        songs.forEach((song) => {
+          const songDiv = document.createElement("div");
+          songDiv.className = "song-item";
+          songDiv.innerHTML = `
+          <p>${song.song_name}</p>
+          <audio id="audio-${song.id}" controls src="/stream/128/${song.id}"></audio>
+          <label for="bitrate-${song.id}">Select Bitrate: </label>
+          <select id="bitrate-${song.id}" onchange="changeBitrate(${song.id})">
+            <option value="128">128 kbps</option>
+            <option value="192">192 kbps</option>
+            <option value="320">320 kbps</option>
+          </select>
+        `;
+          songList.appendChild(songDiv);
+        });
+      }
+
+      // Function to change the bitrate
+      function changeBitrate(songId) {
+        const bitrate = document.getElementById(`bitrate-${songId}`).value;
+        const audio = document.getElementById(`audio-${songId}`);
+        audio.src = `/stream/${bitrate}/${songId}`;
+        audio.play(); // Auto play after bitrate change
+      }
+
+      // Load songs on page load
+      window.onload = loadSongs;
+    </script>
+  </body>
+</html>
