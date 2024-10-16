@@ -112,7 +112,7 @@ By default, the server will run on port `3000`. You can access the application a
 ### 2. **Stream Song at Different Bitrates**
 
 - **GET** `/stream/:bitrate/:id`
-- Streams the song at the specified bitrate. The `bitrate` parameter should be the desired bitrate (e.g., 128, 192, 256), and `id` should be the song ID stored in the database.
+- Streams the song at the specified bitrate. The `bitrate` parameter should be the desired bitrate (e.g. '64', '128', '192', '256', '320'), and `id` should be the song ID stored in the database.
 
 ## How It Works
 
@@ -123,6 +123,18 @@ By default, the server will run on port `3000`. You can access the application a
    When a request is made to stream a song at a specific bitrate, FFmpeg transcodes the song on-the-fly based on the provided bitrate. The transcoded audio is streamed directly to the client.
 
 ## Example Request
+
+## Database
+
+create Database in postgres music_stream then run below query to create table
+
+CREATE TABLE IF NOT EXISTS songs (
+id SERIAL PRIMARY KEY, -- Auto-incrementing primary key
+song_name VARCHAR(250) NOT NULL, -- Name of the song
+file_path VARCHAR(500) NOT NULL, -- File path where the song is stored
+duration INTERVAL NOT NULL, -- Duration of the song (can store as interval)
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp when the song was added
+);
 
 To upload a song:
 
